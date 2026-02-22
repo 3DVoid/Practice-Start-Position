@@ -1,3 +1,7 @@
-# Template Mod
+# Better Practice Mode!
 
-Edit about.md to change this
+***I will add more stuff later***
+---
+## Usage
+- Save Checkpoints!
+- Load And Play Checkpoints Like Start Positions!
