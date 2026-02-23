@@ -21,6 +21,7 @@ struct PL : Modify<PL, PlayLayer> {
         cp.p1.onGround = m_player1->m_isOnGround;
         cp.p1.upsideDown = m_player1->m_isUpsideDown;
         cp.p1.gamemode = m_player1->getActiveMode();
+        cp.perc = this->getCurrentPercentInt();
         
         // make a placeholder number for something absurdly high and then dont do this if the thing is at that number, bc this is not reliable
         if (m_player2->isVisible()) {
