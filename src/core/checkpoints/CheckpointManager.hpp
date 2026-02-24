@@ -4,6 +4,7 @@
 #include <optional>
 #include <cstddef>
 #include "CheckpointStructure.hpp"
+#include <Geode/modify/PlayLayer.hpp>
 
 /** CP = Checkpoint
 *   LCP = Level Checkpoint
@@ -19,5 +20,8 @@ class CPMGR {
 
         static bool saveCP(int levelID, std::size_t index);
         static bool loadCP(int levelID, std::size_t index);
-        static bool applyCP();
+        static bool applyCP(PlayLayer* pl);
+        static void clearList();
+        static std::vector<CheckpointData> getSavedSlots(int levelID);
+        static void removeCP(int levelID, std::size_t index);
 };

@@ -6,10 +6,15 @@ using namespace geode::prelude;
 #include "../checkpoints/CheckpointManager.hpp"
 
 struct PL : Modify<PL, PlayLayer> {
+    void onQuit() {
+        PlayLayer::onQuit();
+        CPMGR::clearList();
+    }
+
     CheckpointObject* createCheckpoint() {
         auto out = PlayLayer::createCheckpoint();
 
-        if (!m_player1) return out;
+        if (!m_player1 || !out) return out;
 
         CheckpointData cp{};
         auto pos1 = m_player1->getPosition();
@@ -22,10 +27,13 @@ struct PL : Modify<PL, PlayLayer> {
         cp.p1.upsideDown = m_player1->m_isUpsideDown;
         cp.p1.gamemode = m_player1->getActiveMode();
         cp.perc = this->getCurrentPercentInt();
+        cp.p1.speedm = m_player1->m_speedMultiplier;
+        cp.p1.speed = m_player1->m_playerSpeed;
+        cp.p1.gravity = m_player1->m_gravity;
+        cp.p1.gravitymod = m_player1->m_gravityMod;
         
-        // make a placeholder number for something absurdly high and then dont do this if the thing is at that number, bc this is not reliable
-        if (m_player2->isVisible()) {
-            cp.hasP2 = true;
+        cp.hasP2 = (out->m_player2Checkpoint != nullptr);
+        if (m_player2 && cp.hasP2) {
             auto pos2 = m_player2->getPosition();
             cp.p2.x = pos2.x;
             cp.p2.y = pos2.y;
@@ -35,6 +43,10 @@ struct PL : Modify<PL, PlayLayer> {
             cp.p2.onGround = m_player2->m_isOnGround;
             cp.p2.upsideDown = m_player2->m_isUpsideDown;
             cp.p2.gamemode = m_player2->getActiveMode();
+            cp.p2.speedm = m_player2->m_speedMultiplier;
+            cp.p2.speed = m_player2->m_playerSpeed;
+            cp.p2.gravity = m_player2->m_gravity;
+            cp.p2.gravitymod = m_player2->m_gravityMod;
         }
 
         CPMGR::onCPlaced(cp);
