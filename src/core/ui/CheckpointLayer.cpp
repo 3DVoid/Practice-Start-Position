@@ -35,12 +35,14 @@ namespace {
 bool CheckpointLayer::init() {
     if (!CCLayerColor::initWithColor({ 0, 0, 0, 128 })) return false;
     this->setTouchEnabled(true);
+    this->setKeypadEnabled(true);
 
     auto win = CCDirector::sharedDirector()->getWinSize();
 
     m_bgPanel = CCScale9Sprite::create("GJ_square05.png");
     if (!m_bgPanel) return false;
     m_bgPanel->setContentSize({ 450.f, 300.f });
+    m_bgPanel->setAnchorPoint({ 0.5f, 0.5f });
     m_bgPanel->setPosition({ win.width / 2.f, win.height / 2.f });
     this->addChild(m_bgPanel);
     m_bgPanel->setZOrder(0);
