@@ -23,27 +23,9 @@ struct BTL : Modify<BTL, PauseLayer> {
     void onBtn(cocos2d::CCObject*) {
         auto layer = CheckpointLayer::create();
         if (!layer) return;
-
-        auto scene = CCDirector::sharedDirector()->getRunningScene();
-        if (!scene) return;
-        if (scene->getChildByID("practice-startpos-layer"_spr)) return;
         layer->setID("practice-startpos-layer"_spr);
 
-        scene->addChild(layer, 10000);
+        this->addChild(layer, 10000);
 
-    }
-
-    void keyDown(enumKeyCodes key, double timestamp) {
-        auto scene = CCDirector::sharedDirector()->getRunningScene();
-        if (scene && scene->getChildByID("practice-startpos-layer"_spr)) {
-            if (key == cocos2d::enumKeyCodes::KEY_Escape) {
-                scene->removeChildByID("practice-startpos-layer"_spr);
-                return;
-            }
-            else {
-                return;
-            }
-        }
-        PauseLayer::keyDown(key, timestamp);
     }
 };

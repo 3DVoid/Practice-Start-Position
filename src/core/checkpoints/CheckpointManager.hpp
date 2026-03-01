@@ -23,5 +23,6 @@ class CPMGR {
         static bool applyCP(PlayLayer* pl);
         static void clearList();
         static std::vector<CheckpointData> getSavedSlots(int levelID);
-        static void removeCP(int levelID, std::size_t index);
+        static bool removeCP(int levelID, std::size_t index);
+        static bool removeNotSavedCP(std::size_t index);
 };

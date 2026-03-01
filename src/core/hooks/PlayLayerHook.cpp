@@ -25,7 +25,7 @@ struct PL : Modify<PL, PlayLayer> {
         cp.p1.rot = m_player1->getRotation();
         cp.p1.onGround = m_player1->m_isOnGround;
         cp.p1.upsideDown = m_player1->m_isUpsideDown;
-        cp.p1.gamemode = m_player1->getActiveMode();
+        cp.p1.gamemode = static_cast<int>(m_player1->getActiveMode());
         cp.perc = this->getCurrentPercentInt();
         cp.p1.speedm = m_player1->m_speedMultiplier;
         cp.p1.speed = m_player1->m_playerSpeed;
@@ -42,7 +42,7 @@ struct PL : Modify<PL, PlayLayer> {
             cp.p2.rot = m_player2->getRotation();
             cp.p2.onGround = m_player2->m_isOnGround;
             cp.p2.upsideDown = m_player2->m_isUpsideDown;
-            cp.p2.gamemode = m_player2->getActiveMode();
+            cp.p2.gamemode = static_cast<int>(m_player2->getActiveMode());
             cp.p2.speedm = m_player2->m_speedMultiplier;
             cp.p2.speed = m_player2->m_playerSpeed;
             cp.p2.gravity = m_player2->m_gravity;

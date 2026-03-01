@@ -120,6 +120,20 @@ namespace {
 
         return writeJson(file, json);
     }
+
+    static GameObjectType modeToPortal(int mode) {
+        switch (mode) {
+            case 0: return GameObjectType::CubePortal;
+            case 1: return GameObjectType::ShipPortal;
+            case 2: return GameObjectType::BallPortal;
+            case 3: return GameObjectType::UfoPortal;
+            case 4: return GameObjectType::WavePortal;
+            case 5: return GameObjectType::RobotPortal;
+            case 6: return GameObjectType::SpiderPortal;
+            case 7: return GameObjectType::SwingPortal;
+            default: return GameObjectType::CubePortal;
+        }
+    }
 }
 
 void CPMGR::onCPlaced(CheckpointData const& Checkpoint) {
@@ -222,7 +236,7 @@ bool CPMGR::loadCP(int levelID, std::size_t index) {
     if (auto v = p1["speedm"].asDouble()) loadedcp.p1.speedm = v.unwrap();
     if (auto v = p1["gravity"].asDouble()) loadedcp.p1.gravity = v.unwrap();
     if (auto v = p1["gravitymod"].asDouble()) loadedcp.p1.gravitymod = static_cast<float>(v.unwrap());
-    if (auto v = p1["gamemode"].asInt()) loadedcp.p1.gamemode = static_cast<GameObjectType>(v.unwrap());
+    if (auto v = p1["gamemode"].asInt()) loadedcp.p1.gamemode = v.unwrap();
 
     if (loadedcp.hasP2 && slot["p2"].isObject()) {
         auto const& p2 = slot["p2"];
@@ -237,7 +251,7 @@ bool CPMGR::loadCP(int levelID, std::size_t index) {
         if (auto v = p2["speedm"].asDouble()) loadedcp.p2.speedm = v.unwrap();
         if (auto v = p2["gravity"].asDouble()) loadedcp.p2.gravity = v.unwrap();
         if (auto v = p2["gravitymod"].asDouble()) loadedcp.p2.gravitymod = static_cast<float>(v.unwrap());
-        if (auto v = p2["gamemode"].asInt()) loadedcp.p2.gamemode = static_cast<GameObjectType>(v.unwrap());
+        if (auto v = p2["gamemode"].asInt()) loadedcp.p2.gamemode = v.unwrap();
     }
 
     s_loaded = loadedcp;
@@ -247,9 +261,8 @@ bool CPMGR::loadCP(int levelID, std::size_t index) {
         geode::log::error("Unable To Auto-Apply, No PlayLayer Found. Please Report To 3dvoidyt (Discord or GD) If Error Consists.");
         return false;
     }
-
-    applyCP(pl);
-    return true;
+    
+    return applyCP(pl);
 }
 
 bool CPMGR::applyCP(PlayLayer* pl) {
@@ -259,8 +272,13 @@ bool CPMGR::applyCP(PlayLayer* pl) {
 
     auto const& cp = s_loaded.value();
 
-    pl->togglePracticeMode(true);
+    pl->toggleDualMode(nullptr, cp.hasP2, pl->m_player1, true);
+    if (!pl->m_isPracticeMode) pl->togglePracticeMode(true);
+    if (cp.hasP2 && pl->m_player2) pl->m_player2->switchedToMode(modeToPortal(cp.p2.gamemode));
 
+    geode::log::info("Applying CP: x={}, y={}, perc={}", cp.p1.x, cp.p1.y, cp.perc);
+
+    pl->m_player1->switchedToMode(modeToPortal(cp.p1.gamemode));
     pl->m_player1->setPosition({ cp.p1.x, cp.p1.y });
     pl->m_player1->setYVelocity(cp.p1.vy, 0);
     if (pl->m_isPlatformer) {
@@ -273,10 +291,16 @@ bool CPMGR::applyCP(PlayLayer* pl) {
     pl->m_player1->m_speedMultiplier = cp.p1.speedm;
     pl->m_player1->m_gravity = cp.p1.gravity;
     pl->m_player1->m_gravityMod = cp.p1.gravitymod;
-    pl->m_player1->switchedToMode(cp.p1.gamemode);
 
-    pl->toggleDualMode(nullptr, cp.hasP2, pl->m_player1, true);
-    if (cp.hasP2 && pl->m_player2) {
+    pl->m_player1->updateRotation(0.f);
+
+    pl->m_player1->setPosition({ cp.p1.x, cp.p1.y });
+    pl->m_player1->setYVelocity(cp.p1.vy, 0);
+
+    if (cp.hasP2 && !pl->m_player2) {
+        geode::log::error("CP Error, idk bro im tired");
+    }
+    if (cp.hasP2 && pl->m_player2 != nullptr) {
         pl->m_player2->setPosition({ cp.p2.x, cp.p2.y });
         pl->m_player2->setYVelocity(cp.p2.vy, 0);
         if (pl->m_isPlatformer) {
@@ -289,9 +313,12 @@ bool CPMGR::applyCP(PlayLayer* pl) {
         pl->m_player2->m_speedMultiplier = cp.p2.speedm;
         pl->m_player2->m_gravity = cp.p2.gravity;
         pl->m_player2->m_gravityMod = cp.p2.gravitymod;
-        pl->m_player2->switchedToMode(cp.p2.gamemode);
-    }
 
+        pl->m_player2->updateRotation(0.f);
+
+        pl->m_player2->setPosition({ cp.p2.x, cp.p2.y });
+        pl->m_player2->setYVelocity(cp.p2.vy, 0);
+    }
     
     return true;
 }
@@ -332,7 +359,7 @@ std::vector<CheckpointData> CPMGR::getSavedSlots(int levelID) {
         if (auto v = p1["speedm"].asDouble()) loadedcp.p1.speedm = v.unwrap();
         if (auto v = p1["gravity"].asDouble()) loadedcp.p1.gravity = v.unwrap();
         if (auto v = p1["gravitymod"].asDouble()) loadedcp.p1.gravitymod = static_cast<float>(v.unwrap());
-        if (auto v = p1["gamemode"].asInt()) loadedcp.p1.gamemode = static_cast<GameObjectType>(v.unwrap());
+        if (auto v = p1["gamemode"].asInt()) loadedcp.p1.gamemode = v.unwrap();
 
         if (loadedcp.hasP2 && slot["p2"].isObject()) {
             auto const& p2 = slot["p2"];
@@ -347,7 +374,7 @@ std::vector<CheckpointData> CPMGR::getSavedSlots(int levelID) {
             if (auto v = p2["speedm"].asDouble()) loadedcp.p2.speedm = v.unwrap();
             if (auto v = p2["gravity"].asDouble()) loadedcp.p2.gravity = v.unwrap();
             if (auto v = p2["gravitymod"].asDouble()) loadedcp.p2.gravitymod = static_cast<float>(v.unwrap());
-            if (auto v = p2["gamemode"].asInt()) loadedcp.p2.gamemode = static_cast<GameObjectType>(v.unwrap());
+            if (auto v = p2["gamemode"].asInt()) loadedcp.p2.gamemode = v.unwrap();
         }
 
         out.push_back(loadedcp);
@@ -356,6 +383,12 @@ std::vector<CheckpointData> CPMGR::getSavedSlots(int levelID) {
     return out;
 }
 
-void CPMGR::removeCP(int levelID, std::size_t index) {
-    removeSlot(levelID, index);
+bool CPMGR::removeCP(int levelID, std::size_t index) {
+    return removeSlot(levelID, index);
+}
+
+bool CPMGR::removeNotSavedCP(std::size_t index) {
+    if (index >= s_list.size()) return false;
+    s_list.erase(s_list.begin() + index);
+    return true;
 }

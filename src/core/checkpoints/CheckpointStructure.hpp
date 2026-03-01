@@ -8,7 +8,7 @@ struct PlayerState {
     
     bool upsideDown = false, onGround = false;
 
-    GameObjectType gamemode = GameObjectType::CubePortal;
+    int gamemode = 0;
 };
 
 struct CheckpointData {
