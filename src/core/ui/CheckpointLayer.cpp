@@ -8,6 +8,7 @@ using namespace geode::prelude;
 #include "../checkpoints/CheckpointManager.hpp"
 #include "../checkpoints/CheckpointStructure.hpp"
 #include <Geode/ui/Notification.hpp>
+#include <cvolton.level-id-api/include/EditorIDs.hpp>
 
 namespace {
     enum class Speeds {
@@ -226,7 +227,15 @@ CCNode* CheckpointLayer::buildSavedTab() {
     auto items = cocos2d::CCArray::create();
     auto playlayer = PlayLayer::get();
     if (!playlayer || !playlayer->m_level) return nullptr;
-    auto list = CPMGR::getSavedSlots(playlayer->m_level->m_levelID);
+    bool editor = (EditorIDs::getID(playlayer->m_level, false) != playlayer->m_level->m_levelID);
+    auto levelID = 0;
+    if (editor) {
+        levelID = EditorIDs::getID(playlayer->m_level, true);
+    }
+    else {
+        levelID = playlayer->m_level->m_levelID;
+    }
+    auto list = CPMGR::getSavedSlots(levelID, editor);
     for (size_t i = 0; i < list.size(); ++i) {
         const auto& cp = list[i];
 
@@ -387,8 +396,22 @@ void CheckpointLayer::onSaveTab(cocos2d::CCObject*) {
         if (m_selectedRecentRow >= 0) {
             auto playlayer = PlayLayer::get();
             if (!playlayer || !playlayer->m_level) return;
-            if (CPMGR::saveCP(playlayer->m_level->m_levelID, m_selectedRecentRow)) Notification::create("Success", NotificationIcon::Success)->show();
+            bool editor = (EditorIDs::getID(playlayer->m_level, false) != playlayer->m_level->m_levelID);
+            auto levelID = 0;
+            if (editor) {
+                levelID = EditorIDs::getID(playlayer->m_level, true);
+            }
+            else {
+                levelID = playlayer->m_level->m_levelID;
+            }
+            if (CPMGR::saveCP(levelID, m_selectedRecentRow, editor)) Notification::create("Success", NotificationIcon::Success)->show();
             else Notification::create("Failed To Save", NotificationIcon::Error)->show();
+
+            m_savedPage->removeChildByID("saved-list"_spr);
+            if (auto saved = buildSavedTab()) {
+                saved->setID("saved-list"_spr);
+                m_savedPage->addChild(saved);
+            }
         }
         else Notification::create("Failed To Save", NotificationIcon::Error)->show();
     }
@@ -403,7 +426,15 @@ void CheckpointLayer::onLoadTab(cocos2d::CCObject*) {
         if (m_selectedSavedRow >= 0 ) {
             auto playlayer = PlayLayer::get();
             if (!playlayer || !playlayer->m_level) return;
-            if (CPMGR::loadCP(playlayer->m_level->m_levelID, m_selectedSavedRow)) Notification::create("Success", NotificationIcon::Success)->show();
+            bool editor = (EditorIDs::getID(playlayer->m_level, false) != playlayer->m_level->m_levelID);
+            auto levelID = 0;
+            if (editor) {
+                levelID = EditorIDs::getID(playlayer->m_level, true);
+            }
+            else {
+                levelID = playlayer->m_level->m_levelID;
+            }
+            if (CPMGR::loadCP(levelID, m_selectedSavedRow, editor)) Notification::create("Success", NotificationIcon::Success)->show();
             else {
                 Notification::create("Failed To Load", NotificationIcon::Error)->show();
                 geode::log::error("Failed To Load, Selected Page = {}, Selected Row = {}", m_selectedPage, m_selectedSavedRow);
@@ -425,7 +456,15 @@ void CheckpointLayer::onDeleteTab(cocos2d::CCObject*) {
         if (m_selectedSavedRow >= 0 ) {
             auto playlayer = PlayLayer::get();
             if (!playlayer || !playlayer->m_level) return;
-            if (!CPMGR::removeCP(playlayer->m_level->m_levelID, m_selectedSavedRow)) {
+            bool editor = (EditorIDs::getID(playlayer->m_level, false) != playlayer->m_level->m_levelID);
+            auto levelID = 0;
+            if (editor) {
+                levelID = EditorIDs::getID(playlayer->m_level, true);
+            }
+            else {
+                levelID = playlayer->m_level->m_levelID;
+            }
+            if (!CPMGR::removeCP(levelID, m_selectedSavedRow, editor)) {
                 Notification::create("Failed To Delete", NotificationIcon::Error)->show();
                 geode::log::error("Failed To Delete, Selected Page = {}, Selected Row = {}", m_selectedPage, m_selectedSavedRow);
                 return;

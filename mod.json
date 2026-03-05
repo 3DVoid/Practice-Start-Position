@@ -1,5 +1,5 @@
 {
-	"geode": "5.2.0",
+	"geode": "5.3.0",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2074",
@@ -12,6 +12,7 @@
 	"developer": "3DVoid",
 	"description": "",
 	"dependencies": {
-		"geode.node-ids": ">=v1.20.0"
+		"geode.node-ids": ">=v1.20.0",
+		"cvolton.level-id-api": ">=v2.0.0"
 	}
 }
